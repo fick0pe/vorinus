@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Resource Pack Combiner</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #1c1a16;
+  min-height: 100vh;
+}
+.rpc {
+  --bg: #1c1a16;
+  --panel: #262218;
+  --panel-alt: #2f2a1e;
+  --slot: #35301f;
+  --slot-border-lt: #4d4630;
+  --slot-border-dk: #171410;
+  --grass: #6aa84f;
+  --grass-dk: #4a7a37;
+  --gold: #d4a72c;
+  --redstone: #c1443c;
+  --text: #ece6d6;
+  --muted: #a39c88;
+  --border: #4a4330;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  padding: 1.75rem;
+  border-radius: 10px;
+  background-image:
+    linear-gradient(var(--panel-alt) 1px, transparent 1px),
+    linear-gradient(90deg, var(--panel-alt) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+.rpc * { box-sizing: border-box; }
+.rpc-h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--gold);
+  margin: 0 0 6px;
+  text-shadow: 2px 2px 0 #000;
+}
+.rpc-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+.rpc-drop {
+  border: 3px dashed var(--border);
+  background: var(--panel);
+  border-radius: 6px;
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.rpc-drop:hover, .rpc-drop.rpc-drag {
+  border-color: var(--grass);
+  background: #2a2818;
+}
+.rpc-drop-icon { font-size: 28px; color: var(--grass); margin-bottom: 8px; }
+.rpc-drop-txt { font-size: 14px; color: var(--text); margin: 0 0 4px; }
+.rpc-drop-sub { font-size: 12px; color: var(--muted); margin: 0; font-family: 'JetBrains Mono', monospace; }
+.rpc input[type=file] { display: none; }
+
+.rpc-legend {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--muted);
+  margin: 18px 0 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.rpc-legend-bar {
+  width: 10px; height: 60px; border-radius: 3px;
+  background: linear-gradient(180deg, var(--grass) 0%, var(--slot) 100%);
+  flex-shrink: 0;
+}
+.rpc-legend-txt { display: flex; flex-direction: column; justify-content: space-between; height: 60px; }
+
+.rpc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rpc-slot {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--slot);
+  border-top: 2px solid var(--slot-border-lt);
+  border-left: 2px solid var(--slot-border-lt);
+  border-right: 2px solid var(--slot-border-dk);
+  border-bottom: 2px solid var(--slot-border-dk);
+  border-radius: 4px;
+  padding: 10px 12px;
+  cursor: grab;
+}
+.rpc-slot.rpc-dragging { opacity: 0.4; }
+.rpc-slot.rpc-over { outline: 2px solid var(--grass); outline-offset: -2px; }
+.rpc-slot:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.rpc-handle { color: var(--muted); font-size: 16px; line-height: 1; cursor: grab; user-select: none; }
+.rpc-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  background: var(--gold);
+  color: #2b2200;
+  width: 26px; height: 26px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.25);
+}
+.rpc-icon {
+  width: 32px; height: 32px; border-radius: 3px;
+  background: var(--panel-alt); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--slot-border-dk);
+  image-rendering: pixelated;
+  overflow: hidden;
+}
+.rpc-icon img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.rpc-icon span { font-size: 15px; }
+.rpc-meta { flex: 1; min-width: 0; }
+.rpc-name { font-size: 14px; font-weight: 600; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rpc-count { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin: 0; }
+.rpc-warn { font-size: 11px; color: var(--gold); font-family: 'JetBrains Mono', monospace; margin: 2px 0 0; }
+.rpc-warn-error { font-size: 11px; color: var(--redstone); font-family: 'JetBrains Mono', monospace; margin: 2px 0 0; font-weight: 600; }
+.rpc-slot.rpc-invalid { border-color: var(--redstone); outline: 1px solid var(--redstone); }
+.rpc-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.rpc-btn-icon {
+  background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
+  color: var(--muted); width: 26px; height: 26px; border-radius: 3px;
+  cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center;
+}
+.rpc-btn-icon:hover { color: var(--text); border-color: var(--grass); }
+.rpc-btn-icon:disabled { opacity: 0.3; cursor: default; }
+.rpc-btn-icon:disabled:hover { color: var(--muted); border-color: var(--slot-border-dk); }
+.rpc-btn-icon.rpc-remove:hover { color: var(--redstone); border-color: var(--redstone); }
+
+.rpc-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 18px 0; }
+
+.rpc-toolbar { display: flex; gap: 8px; margin: 14px 0 0; flex-wrap: wrap; }
+.rpc-toolbar-btn {
+  background: var(--panel); border: 1px solid var(--border);
+  color: var(--muted); font-size: 12px; padding: 7px 12px; border-radius: 4px;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.rpc-toolbar-btn:hover { color: var(--text); border-color: var(--grass); }
+
+.rpc-size-notice {
+  font-size: 12px; color: var(--gold); font-family: 'JetBrains Mono', monospace;
+  margin-top: 10px; padding: 8px 10px; background: var(--panel); border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.rpc-block-notice {
+  font-size: 12px; color: var(--redstone); font-family: 'JetBrains Mono', monospace;
+  margin-top: 10px; padding: 8px 10px; background: var(--panel); border-radius: 4px;
+  border: 1px solid var(--redstone);
+}
+
+.rpc-settings {
+  margin-top: 22px; padding: 14px 16px;
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+}
+.rpc-settings-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px; color: var(--gold); margin: 0 0 12px;
+}
+.rpc-field-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.rpc-field { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 5px; }
+.rpc-field label { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.rpc-field input[type=text], .rpc-field select, .rpc-field input[type=number] {
+  background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
+  color: var(--text); font-size: 13px; padding: 8px 10px; border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+}
+.rpc-field input[type=text]:focus, .rpc-field select:focus, .rpc-field input[type=number]:focus {
+  outline: 1px solid var(--grass);
+}
+.rpc-icon-field { display: flex; align-items: center; gap: 10px; }
+.rpc-icon-preview {
+  width: 40px; height: 40px; border-radius: 3px; flex-shrink: 0;
+  background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  image-rendering: pixelated;
+}
+.rpc-icon-preview img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.rpc-icon-btns { display: flex; flex-direction: column; gap: 4px; }
+.rpc-icon-btn {
+  background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
+  color: var(--text); font-size: 11px; padding: 5px 10px; border-radius: 4px; cursor: pointer;
+}
+.rpc-icon-btn:hover { border-color: var(--grass); }
+
+.rpc-mergebar { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
+.rpc-btn-merge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  background: var(--grass);
+  color: #0f1a0a;
+  border: none;
+  border-top: 2px solid #8ac96a;
+  border-left: 2px solid #8ac96a;
+  border-right: 2px solid var(--grass-dk);
+  border-bottom: 2px solid var(--grass-dk);
+  border-radius: 4px;
+  padding: 12px 20px;
+  cursor: pointer;
+  flex: 1;
+}
+.rpc-btn-merge:hover:not(:disabled) { filter: brightness(1.08); }
+.rpc-btn-merge:disabled { background: var(--panel-alt); color: var(--muted); border-color: var(--slot-border-dk); cursor: default; }
+
+.rpc-progress-wrap { margin-top: 14px; display: none; }
+.rpc-progress-track {
+  width: 100%; height: 16px; background: #111;
+  border-radius: 3px; overflow: hidden;
+  border: 1px solid var(--slot-border-dk);
+}
+.rpc-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--grass), #8ac96a); transition: width 0.2s; }
+.rpc-progress-label { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+
+.rpc-result {
+  display: none;
+  margin-top: 18px; padding: 16px;
+  background: var(--panel);
+  border: 2px solid var(--grass-dk);
+  border-radius: 6px;
+}
+.rpc-result-title { font-size: 14px; font-weight: 600; margin: 0 0 6px; color: var(--grass); display: flex; align-items: center; gap: 8px; }
+.rpc-result-stats { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin: 0 0 12px; line-height: 1.6; }
+.rpc-download {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold); color: #2b2200; font-weight: 600; font-size: 13px;
+  padding: 10px 16px; border-radius: 4px; text-decoration: none;
+  border-top: 2px solid #eac95c; border-left: 2px solid #eac95c;
+  border-right: 2px solid #a3801c; border-bottom: 2px solid #a3801c;
+}
+.rpc-download:hover { filter: brightness(1.05); }
+
+.rpc-error { font-size: 12px; color: var(--redstone); margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="rpc" id="rpcRoot">
+  <p class="rpc-h1">RESOURCE PACK COMBINER</p>
+  <p class="rpc-sub">Upload several <code>.zip</code> resource packs, drag them into priority order, then merge. Files from packs higher in the list overwrite matching files from packs below &mdash; same rule Minecraft uses when you stack packs in game. Priority order is remembered per pack, even after a pack is updated to a new version. Duplicate packs and non-pack zips are flagged automatically, and you can export/import your whole setup as a JSON file.</p>
+
+  <div class="rpc-drop" id="rpcDrop">
+    <div class="rpc-drop-icon">&#9635;</div>
+    <p class="rpc-drop-txt">Click to choose packs, or drag .zip files here</p>
+    <p class="rpc-drop-sub">multiple files supported</p>
+    <input type="file" id="rpcFileInput" accept=".zip" multiple />
+  </div>
+
+  <div id="rpcLegendWrap" style="display:none;">
+    <div class="rpc-legend">
+      <div class="rpc-legend-bar"></div>
+      <div class="rpc-legend-txt">
+        <span>&#9650; highest priority &mdash; overwrites everything below</span>
+        <span>&#9660; lowest priority &mdash; overwritten first</span>
+      </div>
+    </div>
+  </div>
+
+  <ul class="rpc-list" id="rpcList"></ul>
+  <div class="rpc-empty" id="rpcEmpty">No packs added yet.</div>
+
+  <div class="rpc-toolbar" id="rpcToolbar" style="display:none;">
+    <button type="button" class="rpc-toolbar-btn" id="rpcExportBtn">&#8681; Export setup</button>
+    <button type="button" class="rpc-toolbar-btn" id="rpcImportBtn">&#8679; Import setup</button>
+    <input type="file" id="rpcImportInput" accept=".json" style="display:none;" />
+  </div>
+
+  <div class="rpc-size-notice" id="rpcSizeNotice" style="display:none;"></div>
+  <div class="rpc-block-notice" id="rpcBlockNotice" style="display:none;"></div>
+
+  <div class="rpc-settings">
+    <p class="rpc-settings-title">OUTPUT PACK DETAILS</p>
+    <div class="rpc-field-row">
+      <div class="rpc-field">
+        <label for="rpcName">Pack name / description</label>
+        <input type="text" id="rpcName" placeholder="My combined pack" maxlength="80" />
+      </div>
+      <div class="rpc-field">
+        <label for="rpcVersion">Minecraft version</label>
+        <select id="rpcVersion"></select>
+        <input type="number" id="rpcCustomFormat" placeholder="pack_format number" min="1" style="display:none; margin-top:4px;" />
+      </div>
+      <div class="rpc-field">
+        <label>Pack icon</label>
+        <div class="rpc-icon-field">
+          <div class="rpc-icon-preview" id="rpcIconPreview"><span style="font-size:15px;">&#9636;</span></div>
+          <div class="rpc-icon-btns">
+            <button type="button" class="rpc-icon-btn" id="rpcIconChoose">Choose PNG</button>
+            <button type="button" class="rpc-icon-btn" id="rpcIconReset">Use pack's icon</button>
+          </div>
+          <input type="file" id="rpcIconInput" accept="image/png" style="display:none;" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rpc-mergebar">
+    <button class="rpc-btn-merge" id="rpcMergeBtn" disabled>MERGE PACKS</button>
+  </div>
+
+  <div class="rpc-progress-wrap" id="rpcProgressWrap">
+    <div class="rpc-progress-track"><div class="rpc-progress-fill" id="rpcProgressFill"></div></div>
+    <p class="rpc-progress-label" id="rpcProgressLabel">Reading packs...</p>
+  </div>
+
+  <div class="rpc-error" id="rpcError"></div>
+
+  <div class="rpc-result" id="rpcResult">
+    <p class="rpc-result-title">&#10003; Merge complete</p>
+    <p class="rpc-result-stats" id="rpcResultStats"></p>
+    <a class="rpc-download" id="rpcDownload" href="#" download="combined_resourcepack.zip">&#8681; Download combined_resourcepack.zip</a>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function(){
+  const root = document.getElementById('rpcRoot');
+  const drop = document.getElementById('rpcDrop');
+  const fileInput = document.getElementById('rpcFileInput');
+  const list = document.getElementById('rpcList');
+  const empty = document.getElementById('rpcEmpty');
+  const legendWrap = document.getElementById('rpcLegendWrap');
+  const mergeBtn = document.getElementById('rpcMergeBtn');
+  const progressWrap = document.getElementById('rpcProgressWrap');
+  const progressFill = document.getElementById('rpcProgressFill');
+  const progressLabel = document.getElementById('rpcProgressLabel');
+  const errorBox = document.getElementById('rpcError');
+  const resultBox = document.getElementById('rpcResult');
+  const resultStats = document.getElementById('rpcResultStats');
+  const downloadLink = document.getElementById('rpcDownload');
+  const toolbar = document.getElementById('rpcToolbar');
+  const exportBtn = document.getElementById('rpcExportBtn');
+  const importBtn = document.getElementById('rpcImportBtn');
+  const importInput = document.getElementById('rpcImportInput');
+  const sizeNotice = document.getElementById('rpcSizeNotice');
+  const blockNotice = document.getElementById('rpcBlockNotice');
+
+  let packs = [];
+  let idCounter = 0;
+  let dragIndex = null;
+  let storedOrder = [];
+  let focusIndex = null;
+
+  // Plain localStorage wrapper — works in any browser, no external API needed.
+  function storageGet(key) {
+    try {
+      const v = localStorage.getItem(key);
+      return v == null ? null : { value: v };
+    } catch (e) { return null; }
+  }
+  function storageSet(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* storage disabled/full — fails silently */ }
+  }
+
+  (function loadStoredOrder() {
+    const res = storageGet('rpc-pack-order');
+    if (res && res.value) {
+      try { storedOrder = JSON.parse(res.value); } catch (e) { storedOrder = []; }
+    }
+  })();
+
+  // Strips version numbers, mc-version tags, and punctuation so a pack
+  // updated from e.g. "FA+Player-v1.1.zip" to "FA+Player-v1.2.zip" (or a
+  // renamed pack.mcmeta description) still matches its old priority slot.
+  function normalizeKey(str) {
+    return String(str || '')
+      .toLowerCase()
+      .replace(/\.zip$/, '')
+      .replace(/\[[^\]]*\]/g, '')       // [1.20.2 - 1.21.11] style tags
+      .replace(/\([^)]*\)/g, '')        // (1.21+) style tags
+      .replace(/v?\d+(\.\d+)*\+?/g, '') // version numbers: v1.2, 1.21+, 3.0.1.0
+      .replace(/[^a-z0-9]+/g, '');      // remaining punctuation/spaces
+  }
+
+  function applyStoredOrder() {
+    if (!storedOrder.length) return;
+    const remaining = storedOrder.map((entry, i) => ({
+      fileKey: typeof entry === 'string' ? normalizeKey(entry) : entry.fileKey,
+      nameKey: typeof entry === 'string' ? '' : entry.nameKey,
+      i
+    }));
+    const matchedIndex = new Map();
+    for (const pack of packs) {
+      const fk = normalizeKey(pack.fileName);
+      const nk = normalizeKey(pack.name);
+      let pos = remaining.findIndex(e => e.fileKey && e.fileKey === fk);
+      if (pos === -1) pos = remaining.findIndex(e => e.nameKey && e.nameKey === nk);
+      if (pos !== -1) {
+        matchedIndex.set(pack, remaining[pos].i);
+        remaining.splice(pos, 1);
+      }
+    }
+    const known = packs.filter(p => matchedIndex.has(p)).sort((a, b) => matchedIndex.get(a) - matchedIndex.get(b));
+    const unknown = packs.filter(p => !matchedIndex.has(p));
+    packs = unknown.concat(known);
+  }
+
+  function saveOrder() {
+    storedOrder = packs.map(p => ({ fileKey: normalizeKey(p.fileName), nameKey: normalizeKey(p.name) }));
+    storageSet('rpc-pack-order', JSON.stringify(storedOrder));
+  }
+
+  function setError(msg) { errorBox.textContent = msg || ''; }
+
+  drop.addEventListener('click', () => fileInput.click());
+  ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, e => {
+    e.preventDefault(); drop.classList.add('rpc-drag');
+  }));
+  ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, e => {
+    e.preventDefault(); drop.classList.remove('rpc-drag');
+  }));
+  drop.addEventListener('drop', e => {
+    handleFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', e => {
+    handleFiles(e.target.files);
+    fileInput.value = '';
+  });
+
+  function stripFormatting(desc) {
+    if (typeof desc === 'string') return desc.replace(/\u00a7./g, '').trim();
+    if (desc && typeof desc === 'object') {
+      let s = desc.text || '';
+      if (Array.isArray(desc.extra)) s += desc.extra.map(x => (typeof x === 'string' ? x : (x.text||''))).join('');
+      return s.replace(/\u00a7./g, '').trim();
+    }
+    return '';
+  }
+
+  function findRootPrefix(fileNames) {
+    if (fileNames.some(f => f === 'pack.mcmeta' || f.startsWith('assets/'))) return '';
+    for (const f of fileNames) {
+      const m = f.match(/^([^\/]+)\/(pack\.mcmeta|assets\/)/);
+      if (m) return m[1] + '/';
+    }
+    return '';
+  }
+
+  async function handleFiles(fileList) {
+    setError('');
+    const files = Array.from(fileList || []).filter(f => f.name.toLowerCase().endsWith('.zip'));
+    if (!files.length) return;
+    for (const file of files) {
+      try {
+        const buf = await file.arrayBuffer();
+        const zip = await JSZip.loadAsync(buf);
+        const allNames = Object.keys(zip.files);
+        const prefix = findRootPrefix(allNames);
+
+        const entries = new Map();
+        let mcmeta = null;
+        let iconEntry = null;
+        for (const name of allNames) {
+          const entry = zip.files[name];
+          if (entry.dir) continue;
+          if (!name.startsWith(prefix)) continue;
+          const rel = name.slice(prefix.length);
+          if (!rel || rel.startsWith('__MACOSX') || rel.endsWith('.DS_Store')) continue;
+          entries.set(rel, entry);
+          if (rel === 'pack.mcmeta') mcmeta = entry;
+          if (rel === 'pack.png') iconEntry = entry;
+        }
+
+        let displayName = file.name.replace(/\.zip$/i, '');
+        let hasMeta = false;
+        let format = null, minFormat = null, maxFormat = null;
+        if (mcmeta) {
+          hasMeta = true;
+          try {
+            const text = await mcmeta.async('string');
+            const json = JSON.parse(text);
+            const desc = stripFormatting(json && json.pack && json.pack.description);
+            if (desc) displayName = desc.split('\n')[0].slice(0, 60);
+            if (json && json.pack) {
+              if (typeof json.pack.pack_format === 'number') format = json.pack.pack_format;
+              if (typeof json.pack.min_format === 'number') minFormat = json.pack.min_format;
+              if (typeof json.pack.max_format === 'number') maxFormat = json.pack.max_format;
+            }
+          } catch (e) { /* keep filename */ }
+        }
+
+        let iconUrl = null;
+        if (iconEntry) {
+          try {
+            const b64 = await iconEntry.async('base64');
+            iconUrl = 'data:image/png;base64,' + b64;
+          } catch (e) {}
+        }
+
+        const hasAssets = Array.from(entries.keys()).some(k => k.startsWith('assets/'));
+        const invalid = !mcmeta && !hasAssets;
+
+        packs.unshift({
+          id: idCounter++,
+          fileName: file.name,
+          name: displayName,
+          entries,
+          fileCount: entries.size,
+          hasMeta,
+          format, minFormat, maxFormat,
+          iconUrl,
+          invalid,
+          zipSize: file.size
+        });
+      } catch (err) {
+        setError('Could not read "' + file.name + '" — is it a valid .zip? (' + err.message + ')');
+      }
+    }
+    applyStoredOrder();
+    render();
+  }
+
+  function packMatchesSelected(pack, sel) {
+    if (pack.format == null && pack.minFormat == null) return null;
+    if (sel.pack_format != null) {
+      if (pack.format != null) return pack.format === sel.pack_format;
+      return sel.pack_format >= pack.minFormat && sel.pack_format <= pack.maxFormat;
+    }
+    if (pack.format != null) return pack.format >= sel.min_format && pack.format <= sel.max_format;
+    return !(pack.maxFormat < sel.min_format || pack.minFormat > sel.max_format);
+  }
+
+  function render() {
+    list.innerHTML = '';
+    empty.style.display = packs.length ? 'none' : 'block';
+    legendWrap.style.display = packs.length > 1 ? 'block' : 'none';
+    toolbar.style.display = packs.length ? 'flex' : 'none';
+
+    const nameKeyCounts = new Map();
+    packs.forEach(p => {
+      const k = normalizeKey(p.name);
+      if (!k) return;
+      nameKeyCounts.set(k, (nameKeyCounts.get(k) || 0) + 1);
+    });
+
+    const anyInvalid = packs.some(p => p.invalid);
+    mergeBtn.disabled = packs.length < 2 || anyInvalid;
+
+    if (anyInvalid) {
+      const names = packs.filter(p => p.invalid).map(p => p.fileName).join(', ');
+      blockNotice.style.display = 'block';
+      blockNotice.textContent = '⚠ Not a resource pack (no pack.mcmeta or assets/ folder found): ' + names + '. Remove it to continue.';
+    } else {
+      blockNotice.style.display = 'none';
+    }
+
+    const totalBytes = packs.reduce((sum, p) => sum + (p.zipSize || 0), 0);
+    const totalMb = totalBytes / (1024 * 1024);
+    if (totalMb > 300) {
+      sizeNotice.style.display = 'block';
+      sizeNotice.textContent = 'Total input size is ~' + Math.round(totalMb) + ' MB — merging may take a while and use significant browser memory.';
+    } else {
+      sizeNotice.style.display = 'none';
+    }
+
+    packs.forEach((pack, i) => {
+      const li = document.createElement('li');
+      li.className = 'rpc-slot' + (pack.invalid ? ' rpc-invalid' : '');
+      li.draggable = true;
+      li.dataset.index = i;
+      li.tabIndex = 0;
+      li.setAttribute('aria-label', 'Priority ' + (i + 1) + ': ' + pack.name + '. Press arrow up or down to reorder.');
+
+      const iconHtml = pack.iconUrl
+        ? '<img src="' + pack.iconUrl + '" alt="" />'
+        : '<span>&#9636;</span>';
+
+      let warnHtml = '';
+      if (pack.invalid) {
+        warnHtml = '<p class="rpc-warn-error">not a resource pack — no pack.mcmeta or assets/</p>';
+      } else if (!pack.hasMeta) {
+        warnHtml = '<p class="rpc-warn">no pack.mcmeta found</p>';
+      } else {
+        const sel = getSelectedFormat();
+        const match = packMatchesSelected(pack, sel);
+        if (match === false) warnHtml = '<p class="rpc-warn">pack_format may not match selected version</p>';
+      }
+      const nk = normalizeKey(pack.name);
+      if (nk && nameKeyCounts.get(nk) > 1) {
+        warnHtml += '<p class="rpc-warn">possible duplicate of another pack in this list</p>';
+      }
+
+      li.innerHTML =
+        '<span class="rpc-handle">&#8942;&#8942;</span>' +
+        '<span class="rpc-badge">' + (i + 1) + '</span>' +
+        '<span class="rpc-icon">' + iconHtml + '</span>' +
+        '<div class="rpc-meta">' +
+          '<p class="rpc-name">' + escapeHtml(pack.name) + '</p>' +
+          '<p class="rpc-count">' + pack.fileCount + ' files &middot; ' + escapeHtml(pack.fileName) + '</p>' +
+          warnHtml +
+        '</div>' +
+        '<div class="rpc-actions">' +
+          '<button class="rpc-btn-icon rpc-up" ' + (i === 0 ? 'disabled' : '') + ' title="Raise priority">&#9650;</button>' +
+          '<button class="rpc-btn-icon rpc-down" ' + (i === packs.length - 1 ? 'disabled' : '') + ' title="Lower priority">&#9660;</button>' +
+          '<button class="rpc-btn-icon rpc-remove" title="Remove">&times;</button>' +
+        '</div>';
+
+      li.querySelector('.rpc-up').addEventListener('click', () => moveSlot(i, i - 1));
+      li.querySelector('.rpc-down').addEventListener('click', () => moveSlot(i, i + 1));
+      li.querySelector('.rpc-remove').addEventListener('click', () => { packs.splice(i, 1); render(); });
+
+      li.addEventListener('dragstart', () => { dragIndex = i; li.classList.add('rpc-dragging'); });
+      li.addEventListener('dragend', () => { li.classList.remove('rpc-dragging'); render(); });
+      li.addEventListener('dragover', e => { e.preventDefault(); li.classList.add('rpc-over'); });
+      li.addEventListener('dragleave', () => li.classList.remove('rpc-over'));
+      li.addEventListener('drop', e => {
+        e.preventDefault();
+        li.classList.remove('rpc-over');
+        if (dragIndex === null || dragIndex === i) return;
+        moveSlot(dragIndex, i);
+      });
+      li.addEventListener('keydown', e => {
+        if (e.key === 'ArrowUp' && i > 0) { e.preventDefault(); focusIndex = i - 1; moveSlot(i, i - 1); }
+        else if (e.key === 'ArrowDown' && i < packs.length - 1) { e.preventDefault(); focusIndex = i + 1; moveSlot(i, i + 1); }
+      });
+
+      const handle = li.querySelector('.rpc-handle');
+      handle.addEventListener('touchstart', e => {
+        dragIndex = i;
+        li.classList.add('rpc-dragging');
+        e.preventDefault();
+      }, { passive: false });
+
+      list.appendChild(li);
+    });
+
+    resultBox.style.display = 'none';
+    updateIconPreview();
+    if (!nameInput.value && packs.length) nameInput.placeholder = packs[0].name;
+    saveOrder();
+    if (focusIndex !== null) {
+      const el = list.children[focusIndex];
+      if (el) el.focus();
+      focusIndex = null;
+    }
+  }
+
+  function moveSlot(from, to) {
+    const [item] = packs.splice(from, 1);
+    packs.splice(to, 0, item);
+    render();
+  }
+
+  document.addEventListener('touchmove', e => {
+    if (dragIndex === null) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const row = el && el.closest ? el.closest('.rpc-slot') : null;
+    if (!row) return;
+    const overIdx = parseInt(row.dataset.index, 10);
+    if (!Number.isNaN(overIdx) && overIdx !== dragIndex) {
+      list.childNodes.forEach(n => n.classList && n.classList.remove('rpc-over'));
+      row.classList.add('rpc-over');
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', e => {
+    if (dragIndex === null) return;
+    const touch = e.changedTouches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const row = el && el.closest ? el.closest('.rpc-slot') : null;
+    const from = dragIndex;
+    dragIndex = null;
+    if (row) {
+      const to = parseInt(row.dataset.index, 10);
+      if (!Number.isNaN(to) && to !== from) { moveSlot(from, to); return; }
+    }
+    render();
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  const nameInput = document.getElementById('rpcName');
+  const versionSelect = document.getElementById('rpcVersion');
+  const iconPreview = document.getElementById('rpcIconPreview');
+  const iconChooseBtn = document.getElementById('rpcIconChoose');
+  const iconResetBtn = document.getElementById('rpcIconReset');
+  const iconInput = document.getElementById('rpcIconInput');
+
+  const VERSIONS = [
+    { label: '1.6.1 – 1.8.9', format: 1 },
+    { label: '1.9 – 1.10.2', format: 2 },
+    { label: '1.11 – 1.12.2', format: 3 },
+    { label: '1.13 – 1.14.4', format: 4 },
+    { label: '1.15 – 1.16.1', format: 5 },
+    { label: '1.16.2 – 1.16.5', format: 6 },
+    { label: '1.17 – 1.17.1', format: 7 },
+    { label: '1.18 – 1.18.2', format: 8 },
+    { label: '1.19 – 1.19.2', format: 9 },
+    { label: '1.19.3', format: 12 },
+    { label: '1.19.4', format: 13 },
+    { label: '1.20 – 1.20.1', format: 15 },
+    { label: '1.20.2', format: 18 },
+    { label: '1.20.3 – 1.20.4', format: 22 },
+    { label: '1.20.5 – 1.20.6', format: 32 },
+    { label: '1.21 – 1.21.1', format: 34 },
+    { label: '1.21.2 – 1.21.3', format: 42 },
+    { label: '1.21.4', format: 46 },
+    { label: '1.21.5', format: 55 },
+    { label: '1.21.6', format: 63, default: true },
+    { label: '1.21.7 – 1.21.8', format: 64 },
+    { label: '1.21.9 – 1.21.10', minFormat: 69, maxFormat: 100 },
+    { label: '1.21.11', minFormat: 75, maxFormat: 100 },
+    { label: '26.1 – 26.1.2', minFormat: 84, maxFormat: 100 },
+    { label: '26.2+ (latest)', minFormat: 88, maxFormat: 100 }
+  ];
+  VERSIONS.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = v.label;
+    if (v.default) opt.selected = true;
+    versionSelect.appendChild(opt);
+  });
+  const customOpt = document.createElement('option');
+  customOpt.value = 'custom';
+  customOpt.textContent = 'Custom pack_format...';
+  versionSelect.appendChild(customOpt);
+  const customFormatInput = document.getElementById('rpcCustomFormat');
+  versionSelect.addEventListener('change', () => {
+    customFormatInput.style.display = versionSelect.value === 'custom' ? 'block' : 'none';
+    render();
+    saveOutputSettings();
+  });
+  customFormatInput.addEventListener('input', () => { render(); saveOutputSettings(); });
+  nameInput.addEventListener('input', () => saveOutputSettings());
+
+  function getSelectedFormat() {
+    if (versionSelect.value === 'custom') {
+      const n = parseInt(customFormatInput.value, 10);
+      return { pack_format: (n > 0 ? n : 1) };
+    }
+    const v = VERSIONS[parseInt(versionSelect.value, 10)];
+    if (v.minFormat) return { min_format: v.minFormat, max_format: v.maxFormat };
+    return { pack_format: v.format };
+  }
+
+  let customIcon = null;
+
+  function uint8ArrayToBase64(bytes) {
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+  function base64ToUint8Array(b64) {
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
+
+  function saveOutputSettings() {
+    const s = { name: nameInput.value, versionValue: versionSelect.value, customFormat: customFormatInput.value };
+    if (customIcon) s.iconBase64 = uint8ArrayToBase64(customIcon);
+    storageSet('rpc-output-settings', JSON.stringify(s));
+  }
+
+  function loadOutputSettings() {
+    const res = storageGet('rpc-output-settings');
+    if (!res || !res.value) return;
+    try {
+      const s = JSON.parse(res.value);
+      if (s.name) nameInput.value = s.name;
+      if (s.versionValue) versionSelect.value = s.versionValue;
+      if (s.customFormat) customFormatInput.value = s.customFormat;
+      customFormatInput.style.display = versionSelect.value === 'custom' ? 'block' : 'none';
+      if (s.iconBase64) {
+        customIcon = base64ToUint8Array(s.iconBase64);
+        iconPreview.innerHTML = '<img src="data:image/png;base64,' + s.iconBase64 + '" alt="" />';
+      }
+    } catch (e) { /* nothing saved yet */ }
+  }
+  loadOutputSettings();
+
+  exportBtn.addEventListener('click', () => {
+    const setup = {
+      formatVersion: 1,
+      outputName: nameInput.value,
+      versionValue: versionSelect.value,
+      customFormat: customFormatInput.value,
+      order: packs.map(p => ({ fileKey: normalizeKey(p.fileName), nameKey: normalizeKey(p.name), displayName: p.name }))
+    };
+    if (customIcon) setup.iconBase64 = uint8ArrayToBase64(customIcon);
+    const blob = new Blob([JSON.stringify(setup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'resourcepack-combiner-setup.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  importBtn.addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', async () => {
+    const file = importInput.files[0];
+    importInput.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const setup = JSON.parse(text);
+      if (typeof setup.outputName === 'string') nameInput.value = setup.outputName;
+      if (setup.versionValue != null) versionSelect.value = setup.versionValue;
+      if (setup.customFormat != null) customFormatInput.value = setup.customFormat;
+      customFormatInput.style.display = versionSelect.value === 'custom' ? 'block' : 'none';
+      if (setup.iconBase64) {
+        customIcon = base64ToUint8Array(setup.iconBase64);
+        iconPreview.innerHTML = '<img src="data:image/png;base64,' + setup.iconBase64 + '" alt="" />';
+      }
+      if (Array.isArray(setup.order)) {
+        storedOrder = setup.order;
+        applyStoredOrder();
+      }
+      saveOutputSettings();
+      render();
+      setError('');
+    } catch (e) {
+      setError('Could not read that setup file: ' + e.message);
+    }
+  });
+
+  iconChooseBtn.addEventListener('click', () => iconInput.click());
+  iconResetBtn.addEventListener('click', () => {
+    customIcon = null;
+    updateIconPreview();
+    saveOutputSettings();
+  });
+  iconInput.addEventListener('change', async () => {
+    const file = iconInput.files[0];
+    if (!file) return;
+    const buf = await file.arrayBuffer();
+    customIcon = new Uint8Array(buf);
+    iconPreview.innerHTML = '<img src="' + URL.createObjectURL(file) + '" alt="" />';
+    iconInput.value = '';
+    saveOutputSettings();
+  });
+
+  function updateIconPreview() {
+    if (customIcon) return;
+    const fallback = packs.find(p => p.iconUrl);
+    if (fallback) {
+      iconPreview.innerHTML = '<img src="' + fallback.iconUrl + '" alt="" />';
+    } else {
+      iconPreview.innerHTML = '<span style="font-size:15px;">&#9636;</span>';
+    }
+  }
+
+
+
+  mergeBtn.addEventListener('click', mergeAll);
+
+  async function mergeAll() {
+    setError('');
+    if (packs.some(p => p.invalid)) {
+      setError('Remove the pack(s) flagged as "not a resource pack" before merging.');
+      return;
+    }
+    resultBox.style.display = 'none';
+    mergeBtn.disabled = true;
+    progressWrap.style.display = 'block';
+    progressFill.style.width = '5%';
+    progressLabel.textContent = 'Combining files...';
+
+    try {
+      const LANG_RE = /^assets\/[^/]+\/lang\/[^/]+\.json$/i;
+      const merged = new Map();
+      const langSources = new Map();
+      const overrideGroups = new Map();
+      const pathOwner = new Map();
+      let overwritten = 0;
+      let total = 0;
+
+      const lowToHigh = [...packs].reverse();
+      lowToHigh.forEach((pack, idx) => {
+        for (const [path, entry] of pack.entries) {
+          if (LANG_RE.test(path)) {
+            if (!langSources.has(path)) langSources.set(path, []);
+            langSources.get(path).push({ packName: pack.name, entry });
+            total++;
+            continue;
+          }
+          if (merged.has(path)) {
+            overwritten++;
+            const key = pack.name + ' overrides ' + pathOwner.get(path);
+            overrideGroups.set(key, (overrideGroups.get(key) || 0) + 1);
+          }
+          merged.set(path, entry);
+          pathOwner.set(path, pack.name);
+          total++;
+        }
+        progressFill.style.width = (5 + (idx + 1) / lowToHigh.length * 30) + '%';
+      });
+
+      let langMergedCount = 0;
+      progressLabel.textContent = 'Merging language files...';
+      for (const [path, sources] of langSources) {
+        if (sources.length === 1) {
+          merged.set(path, sources[0].entry);
+          continue;
+        }
+        langMergedCount++;
+        const mergedObj = {};
+        for (const src of sources) {
+          try {
+            const text = await src.entry.async('string');
+            Object.assign(mergedObj, JSON.parse(text));
+          } catch (e) { /* skip invalid json for this pack */ }
+        }
+        const json = JSON.stringify(mergedObj, null, 2);
+        merged.set(path, { async: () => Promise.resolve(new TextEncoder().encode(json)) });
+      }
+      progressFill.style.width = '35%';
+
+      const outputName = (nameInput.value.trim() || (packs[0] && packs[0].name) || 'combined pack');
+      const fmt = getSelectedFormat();
+      const mcmetaJson = JSON.stringify({ pack: Object.assign({ description: outputName }, fmt) }, null, 2);
+      merged.set('pack.mcmeta', { async: () => Promise.resolve(new TextEncoder().encode(mcmetaJson)) });
+      if (customIcon) {
+        merged.set('pack.png', { async: () => Promise.resolve(customIcon) });
+      }
+
+      const outZip = new JSZip();
+      const pathList = Array.from(merged.keys());
+      let done = 0;
+      for (const path of pathList) {
+        const entry = merged.get(path);
+        const content = await entry.async('uint8array');
+        outZip.file(path, content);
+        done++;
+        if (done % 25 === 0 || done === pathList.length) {
+          progressFill.style.width = (40 + done / pathList.length * 40) + '%';
+          progressLabel.textContent = 'Writing files... (' + done + '/' + pathList.length + ')';
+        }
+      }
+
+      progressLabel.textContent = 'Compressing zip...';
+      const blob = await outZip.generateAsync(
+        { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
+        (meta) => { progressFill.style.width = (80 + meta.percent * 0.2) + '%'; }
+      );
+
+      progressFill.style.width = '100%';
+      progressLabel.textContent = 'Done.';
+
+      const url = URL.createObjectURL(blob);
+      const safeName = outputName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'combined_resourcepack';
+      downloadLink.href = url;
+      downloadLink.download = safeName + '.zip';
+      downloadLink.textContent = '\u2193 Download ' + safeName + '.zip';
+
+      const uniqueFiles = merged.size;
+      const sizeKb = Math.round(blob.size / 1024).toLocaleString();
+      resultStats.innerHTML =
+        packs.length + ' packs merged into "' + escapeHtml(outputName) + '"<br/>' +
+        uniqueFiles.toLocaleString() + ' unique files &middot; ' +
+        overwritten.toLocaleString() + ' overridden by a higher-priority pack' +
+        (langMergedCount ? ' &middot; ' + langMergedCount + ' language files merged key-by-key' : '') + '<br/>' +
+        'final size: ' + sizeKb + ' KB';
+
+      if (overrideGroups.size) {
+        const rows = Array.from(overrideGroups.entries()).sort((a, b) => b[1] - a[1]);
+        const shown = rows.slice(0, 30);
+        const rest = rows.length - shown.length;
+        resultStats.innerHTML +=
+          '<details style="margin-top:8px;"><summary style="cursor:pointer; color: var(--gold);">See what was overridden</summary>' +
+          '<div style="margin-top:6px;">' +
+          shown.map(([label, count]) => escapeHtml(label) + ' — ' + count + ' file' + (count === 1 ? '' : 's')).join('<br/>') +
+          (rest > 0 ? '<br/>+' + rest + ' more' : '') +
+          '</div></details>';
+      }
+      resultBox.style.display = 'block';
+    } catch (err) {
+      setError('Merge failed: ' + err.message);
+    } finally {
+      mergeBtn.disabled = false;
+      setTimeout(() => { progressWrap.style.display = 'none'; }, 600);
+    }
+  }
+})();
+</script>
+</body>
+</html>
