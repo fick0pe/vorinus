@@ -11,10 +11,10 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background: #1c1a16;
+  background: #19191b;
   background-image:
-    linear-gradient(#2f2a1e 1px, transparent 1px),
-    linear-gradient(90deg, #2f2a1e 1px, transparent 1px);
+    linear-gradient(#26262a 1px, transparent 1px),
+    linear-gradient(90deg, #26262a 1px, transparent 1px);
   background-size: 24px 24px;
   background-position: -1px -1px;
 }
@@ -25,19 +25,20 @@ body {
   box-sizing: border-box;
 }
 .rpc {
-  --bg: #1c1a16;
-  --panel: #262218;
-  --panel-alt: #2f2a1e;
-  --slot: #35301f;
-  --slot-border-lt: #4d4630;
-  --slot-border-dk: #171410;
-  --grass: #6aa84f;
-  --grass-dk: #4a7a37;
-  --gold: #d4a72c;
-  --redstone: #c1443c;
-  --text: #ece6d6;
-  --muted: #a39c88;
-  --border: #4a4330;
+  --bg: #19191b;
+  --panel: #212124;
+  --panel-alt: #2a2a2e;
+  --slot: #313136;
+  --slot-border-lt: #45454b;
+  --slot-border-dk: #0e0e10;
+  --gold: #ffd700;
+  --gold-dk: #b8960a;
+  --gold-lt: #ffe45c;
+  --gold-ink: #1a1600;
+  --redstone: #e5534b;
+  --text: #e9e9ec;
+  --muted: #9a9aa1;
+  --border: #3a3a40;
   font-family: 'Inter', sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -57,8 +58,8 @@ body {
   margin-bottom: 18px; flex-wrap: wrap;
 }
 .rpc-header-icon {
-  width: 40px; height: 40px; flex-shrink: 0;
-  image-rendering: pixelated;
+  width: 46px; height: 46px; flex-shrink: 0;
+  object-fit: contain;
 }
 .rpc-header-text { flex: 1; min-width: 200px; }
 .rpc-h1 {
@@ -82,7 +83,7 @@ body {
   color: var(--muted); font-size: 12px; padding: 8px 12px; border-radius: 4px;
   cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap;
 }
-.rpc-toolbar-btn:hover { color: var(--text); border-color: var(--grass); }
+.rpc-toolbar-btn:hover { color: var(--text); border-color: var(--gold); }
 
 /* ---------- 3-column grid ---------- */
 .rpc-grid {
@@ -114,6 +115,23 @@ body {
   font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace;
 }
 
+.rpc-list-controls { display: flex; gap: 8px; margin-bottom: 10px; }
+.rpc-filter-input {
+  flex: 1; min-width: 0;
+  background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
+  color: var(--text); font-size: 12.5px; padding: 7px 10px; border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+}
+.rpc-filter-input:focus { outline: 1px solid var(--gold); }
+.rpc-filter-input::placeholder { color: var(--muted); }
+.rpc-clear-btn {
+  background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
+  color: var(--muted); font-size: 11.5px; padding: 7px 10px; border-radius: 4px;
+  cursor: pointer; white-space: nowrap; font-family: 'Inter', sans-serif;
+}
+.rpc-clear-btn:hover { color: var(--text); border-color: var(--redstone); }
+.rpc-clear-btn.rpc-confirming { color: #fff; background: var(--redstone); border-color: var(--redstone); }
+
 /* ---------- upload column ---------- */
 .rpc-drop {
   border: 3px dashed var(--border);
@@ -125,10 +143,10 @@ body {
   transition: border-color 0.15s, background 0.15s;
 }
 .rpc-drop:hover, .rpc-drop.rpc-drag {
-  border-color: var(--grass);
-  background: #2a2818;
+  border-color: var(--gold);
+  background: #2f2f34;
 }
-.rpc-drop-icon { font-size: 30px; color: var(--grass); margin-bottom: 8px; }
+.rpc-drop-icon { font-size: 30px; color: var(--gold); margin-bottom: 8px; }
 .rpc-drop-txt { font-size: 13.5px; color: var(--text); margin: 0 0 4px; }
 .rpc-drop-sub { font-size: 11.5px; color: var(--muted); margin: 0; font-family: 'JetBrains Mono', monospace; }
 .rpc input[type=file] { display: none; }
@@ -153,12 +171,23 @@ body {
 }
 .rpc-legend-bar {
   width: 8px; height: 42px; border-radius: 3px;
-  background: linear-gradient(180deg, var(--grass) 0%, var(--slot) 100%);
+  background: linear-gradient(180deg, var(--gold) 0%, var(--slot) 100%);
   flex-shrink: 0;
 }
 .rpc-legend-txt { display: flex; flex-direction: column; justify-content: space-between; height: 42px; }
 
-.rpc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rpc-list {
+  list-style: none; margin: 0; padding: 0 6px 0 0; display: flex; flex-direction: column; gap: 8px;
+  max-height: 460px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.rpc-list::-webkit-scrollbar { width: 8px; }
+.rpc-list::-webkit-scrollbar-track { background: var(--panel-alt); border-radius: 4px; }
+.rpc-list::-webkit-scrollbar-thumb { background: var(--slot-border-lt); border-radius: 4px; }
+.rpc-list::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+.rpc-list { scrollbar-width: thin; scrollbar-color: var(--slot-border-lt) var(--panel-alt); }
 .rpc-slot {
   display: flex; align-items: center; gap: 10px;
   background: var(--slot);
@@ -171,7 +200,7 @@ body {
   cursor: grab;
 }
 .rpc-slot.rpc-dragging { opacity: 0.4; }
-.rpc-slot.rpc-over { outline: 2px solid var(--grass); outline-offset: -2px; }
+.rpc-slot.rpc-over { outline: 2px solid var(--gold); outline-offset: -2px; }
 .rpc-slot:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
 .rpc-slot.rpc-invalid { border-color: var(--redstone); outline: 1px solid var(--redstone); }
 .rpc-handle { color: var(--muted); font-size: 15px; line-height: 1; cursor: grab; user-select: none; flex-shrink: 0; }
@@ -179,7 +208,7 @@ body {
   font-family: 'Press Start 2P', monospace;
   font-size: 9px;
   background: var(--gold);
-  color: #2b2200;
+  color: var(--gold-ink);
   width: 24px; height: 24px;
   border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
@@ -196,18 +225,22 @@ body {
 }
 .rpc-icon img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
 .rpc-icon span { font-size: 14px; }
+.rpc-icon-mosaic { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; width: 100%; height: 100%; }
+.rpc-icon-mosaic img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; display: block; }
 .rpc-meta { flex: 1; min-width: 0; }
 .rpc-name { font-size: 13.5px; font-weight: 600; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rpc-count { font-size: 10.5px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rpc-warn { font-size: 10.5px; color: var(--gold); font-family: 'JetBrains Mono', monospace; margin: 2px 0 0; }
 .rpc-warn-error { font-size: 10.5px; color: var(--redstone); font-family: 'JetBrains Mono', monospace; margin: 2px 0 0; font-weight: 600; }
+.rpc-conflict-note { font-size: 10.5px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin: 2px 0 0; }
+.rpc-conflict-note.rpc-win { color: var(--text); }
 .rpc-actions { display: flex; gap: 4px; flex-shrink: 0; }
 .rpc-btn-icon {
   background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
   color: var(--muted); width: 24px; height: 24px; border-radius: 3px;
   cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;
 }
-.rpc-btn-icon:hover { color: var(--text); border-color: var(--grass); }
+.rpc-btn-icon:hover { color: var(--text); border-color: var(--gold); }
 .rpc-btn-icon:disabled { opacity: 0.3; cursor: default; }
 .rpc-btn-icon:disabled:hover { color: var(--muted); border-color: var(--slot-border-dk); }
 .rpc-btn-icon.rpc-remove:hover { color: var(--redstone); border-color: var(--redstone); }
@@ -235,7 +268,7 @@ body {
   font-family: 'Inter', sans-serif; width: 100%;
 }
 .rpc-field input[type=text]:focus, .rpc-field select:focus, .rpc-field input[type=number]:focus {
-  outline: 1px solid var(--grass);
+  outline: 1px solid var(--gold);
 }
 .rpc-icon-field { display: flex; align-items: center; gap: 10px; }
 .rpc-icon-preview {
@@ -250,7 +283,7 @@ body {
   background: var(--panel-alt); border: 1px solid var(--slot-border-dk);
   color: var(--text); font-size: 11px; padding: 5px 10px; border-radius: 4px; cursor: pointer;
 }
-.rpc-icon-btn:hover { border-color: var(--grass); }
+.rpc-icon-btn:hover { border-color: var(--gold); }
 
 /* ---------- footer action bar ---------- */
 .rpc-footer {
@@ -273,13 +306,13 @@ body {
 .rpc-btn-merge {
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
-  background: var(--grass);
-  color: #0f1a0a;
+  background: var(--gold);
+  color: var(--gold-ink);
   border: none;
-  border-top: 2px solid #8ac96a;
-  border-left: 2px solid #8ac96a;
-  border-right: 2px solid var(--grass-dk);
-  border-bottom: 2px solid var(--grass-dk);
+  border-top: 2px solid var(--gold-lt);
+  border-left: 2px solid var(--gold-lt);
+  border-right: 2px solid var(--gold-dk);
+  border-bottom: 2px solid var(--gold-dk);
   border-radius: 4px;
   padding: 14px 26px;
   cursor: pointer;
@@ -288,7 +321,7 @@ body {
 .rpc-btn-merge:hover:not(:disabled) { filter: brightness(1.08); }
 .rpc-btn-merge:disabled { background: var(--panel-alt); color: var(--muted); border-color: var(--slot-border-dk); cursor: default; }
 .rpc-footer-safe { font-size: 11px; color: var(--muted); text-align: right; line-height: 1.5; }
-.rpc-footer-safe strong { color: var(--grass); display: block; font-size: 12px; }
+.rpc-footer-safe strong { color: var(--gold); display: block; font-size: 12px; }
 @media (max-width: 700px) { .rpc-footer-safe { text-align: center; } }
 
 .rpc-progress-wrap { margin-top: 14px; display: none; }
@@ -297,24 +330,24 @@ body {
   border-radius: 3px; overflow: hidden;
   border: 1px solid var(--slot-border-dk);
 }
-.rpc-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--grass), #8ac96a); transition: width 0.2s; }
+.rpc-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), var(--gold-lt)); transition: width 0.2s; }
 .rpc-progress-label { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
 
 .rpc-result {
   display: none;
   margin-top: 14px; padding: 16px;
   background: var(--panel);
-  border: 2px solid var(--grass-dk);
+  border: 2px solid var(--gold-dk);
   border-radius: 6px;
 }
-.rpc-result-title { font-size: 14px; font-weight: 600; margin: 0 0 6px; color: var(--grass); display: flex; align-items: center; gap: 8px; }
+.rpc-result-title { font-size: 14px; font-weight: 600; margin: 0 0 6px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
 .rpc-result-stats { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin: 0 0 12px; line-height: 1.6; }
 .rpc-download {
   display: inline-flex; align-items: center; gap: 8px;
-  background: var(--gold); color: #2b2200; font-weight: 600; font-size: 13px;
+  background: var(--gold); color: var(--gold-ink); font-weight: 600; font-size: 13px;
   padding: 10px 16px; border-radius: 4px; text-decoration: none;
-  border-top: 2px solid #eac95c; border-left: 2px solid #eac95c;
-  border-right: 2px solid #a3801c; border-bottom: 2px solid #a3801c;
+  border-top: 2px solid var(--gold-lt); border-left: 2px solid var(--gold-lt);
+  border-right: 2px solid var(--gold-dk); border-bottom: 2px solid var(--gold-dk);
 }
 .rpc-download:hover { filter: brightness(1.05); }
 
@@ -326,15 +359,7 @@ body {
 <div class="rpc" id="rpcRoot">
 
   <div class="rpc-header">
-    <svg class="rpc-header-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
-      <rect width="16" height="16" fill="#171410"/>
-      <rect x="1" y="1" width="14" height="14" fill="#8a6b3f"/>
-      <rect x="1" y="1" width="14" height="6" fill="#6aa84f"/>
-      <rect x="1" y="1" width="14" height="2" fill="#7fc562"/>
-      <rect x="3" y="9" width="3" height="3" fill="#b9905a"/>
-      <rect x="9" y="9" width="3" height="3" fill="#b9905a"/>
-      <rect x="6" y="11" width="4" height="3" fill="#a37c4a"/>
-    </svg>
+<img class="rpc-header-icon" src="data:image/png;base64,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AAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACLimBwAA39t7r+kNAMC3XAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABFzTAwBgxLvO9AQA+Nx91vQE5rgAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAi4pgcAwIj7rOkJAAx415meAFNcAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAEXNMDAIDvPc9zpjcAM/bea3oDMMMFAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQMA1PYBZe+81vQEAAID/5wIAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIOCaHsCwd53pCQAAwEf8/6e5AAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIEAAAAAAgQAAAAACAAAEAAAAAAgQAAAAACBAAAAAAIEAAAAAAgAABAAAAAAIEAAAAAAgQAAAAACBAAAAAAIAAAQAAAAACBAAAAAAIWOec6Q1Melf7AbjPmp4AAADwBRcAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABAgAAAAAECAAAAAAQIAAAAABAgAAAAAAAAQIAAAAABAgAAAAAECAAAAAAQIAAAAAAAAECAAAAAAQIAAAAABAgAAAAAECAAAAAAAABfyROML8fOnhiAAAAAElFTkSuQmCC" alt="Vorinus logo" />
     <div class="rpc-header-text">
       <p class="rpc-h1">RESOURCE PACK COMBINER</p>
       <p class="rpc-tagline">Combine multiple resource packs into one file, in the priority order you choose. Everything runs locally in your browser.</p>
@@ -359,6 +384,7 @@ body {
       <div class="rpc-tips">
         <p class="rpc-tips-title">&#128161; TIPS</p>
         <p>Packs higher in the priority list win when files overlap &mdash; same rule as stacking packs in-game.</p>
+        <p>Each pack shows live conflict counts as you reorder, so you can see the effect before merging.</p>
         <p>Priority order is remembered per pack, even after you update a pack to a newer version.</p>
       </div>
     </div>
@@ -377,8 +403,13 @@ body {
           </div>
         </div>
       </div>
+      <div class="rpc-list-controls" id="rpcListControls" style="display:none;">
+        <input type="text" class="rpc-filter-input" id="rpcFilterInput" placeholder="Filter packs by name..." />
+        <button type="button" class="rpc-clear-btn" id="rpcClearAllBtn">Clear all</button>
+      </div>
       <ul class="rpc-list" id="rpcList"></ul>
       <div class="rpc-empty" id="rpcEmpty">No packs added yet.</div>
+      <div class="rpc-empty" id="rpcNoMatch" style="display:none;">No packs match that filter.</div>
       <div class="rpc-size-notice" id="rpcSizeNotice" style="display:none;"></div>
       <div class="rpc-block-notice" id="rpcBlockNotice" style="display:none;"></div>
     </div>
@@ -454,12 +485,21 @@ body {
   const importInput = document.getElementById('rpcImportInput');
   const sizeNotice = document.getElementById('rpcSizeNotice');
   const blockNotice = document.getElementById('rpcBlockNotice');
+  const listControls = document.getElementById('rpcListControls');
+  const filterInput = document.getElementById('rpcFilterInput');
+  const clearAllBtn = document.getElementById('rpcClearAllBtn');
+  const noMatch = document.getElementById('rpcNoMatch');
 
   let packs = [];
   let idCounter = 0;
   let dragIndex = null;
   let storedOrder = [];
   let focusIndex = null;
+  let filterText = '';
+
+  // Shared with the merge step: lang files are merged key-by-key, not
+  // treated as a straight override, so they're excluded from conflict counts.
+  const LANG_RE = /^assets\/[^/]+\/lang\/[^/]+\.json$/i;
 
   // Plain localStorage wrapper — works in any browser, no external API needed.
   function storageGet(key) {
@@ -546,6 +586,36 @@ body {
     fileInput.value = '';
   });
 
+  filterInput.addEventListener('input', () => {
+    filterText = filterInput.value;
+    render();
+  });
+
+  let clearArmed = false;
+  let clearArmedTimeout = null;
+  clearAllBtn.addEventListener('click', () => {
+    if (!packs.length) return;
+    if (!clearArmed) {
+      clearArmed = true;
+      clearAllBtn.textContent = 'Click again to confirm';
+      clearAllBtn.classList.add('rpc-confirming');
+      clearArmedTimeout = setTimeout(() => {
+        clearArmed = false;
+        clearAllBtn.textContent = 'Clear all';
+        clearAllBtn.classList.remove('rpc-confirming');
+      }, 4000);
+      return;
+    }
+    clearTimeout(clearArmedTimeout);
+    clearArmed = false;
+    clearAllBtn.textContent = 'Clear all';
+    clearAllBtn.classList.remove('rpc-confirming');
+    packs = [];
+    filterText = '';
+    filterInput.value = '';
+    render();
+  });
+
   function stripFormatting(desc) {
     if (typeof desc === 'string') return desc.replace(/\u00a7./g, '').trim();
     if (desc && typeof desc === 'object') {
@@ -565,6 +635,20 @@ body {
     return '';
   }
 
+  function pickPreviewThumbPaths(entries) {
+    const candidates = Array.from(entries.keys()).filter(p =>
+      /\.png$/i.test(p) && /\/textures\//.test(p) && !/\/textures\/(environment|gui|colormap)\//.test(p)
+    );
+    const pool = candidates.length ? candidates : Array.from(entries.keys()).filter(p => /\.png$/i.test(p) && p !== 'pack.png');
+    if (!pool.length) return [];
+    pool.sort();
+    const want = 4;
+    const step = Math.max(1, Math.floor(pool.length / want));
+    const picked = [];
+    for (let i = 0; i < pool.length && picked.length < want; i += step) picked.push(pool[i]);
+    return picked.slice(0, want);
+  }
+
   async function handleFiles(fileList) {
     setError('');
     const files = Array.from(fileList || []).filter(f => f.name.toLowerCase().endsWith('.zip'));
@@ -572,8 +656,14 @@ body {
     for (const file of files) {
       try {
         const buf = await file.arrayBuffer();
-        const zip = await JSZip.loadAsync(buf);
+        let zip;
+        try {
+          zip = await JSZip.loadAsync(buf);
+        } catch (zipErr) {
+          throw new Error('doesn\'t look like a valid zip file — it may be corrupted or only partially downloaded');
+        }
         const allNames = Object.keys(zip.files);
+        if (!allNames.length) throw new Error('this zip is empty');
         const prefix = findRootPrefix(allNames);
 
         const entries = new Map();
@@ -616,6 +706,17 @@ body {
           } catch (e) {}
         }
 
+        let previewThumbs = [];
+        if (!iconUrl) {
+          const thumbPaths = pickPreviewThumbPaths(entries);
+          for (const p of thumbPaths) {
+            try {
+              const b64 = await entries.get(p).async('base64');
+              previewThumbs.push('data:image/png;base64,' + b64);
+            } catch (e) { /* skip unreadable texture, not fatal */ }
+          }
+        }
+
         const hasAssets = Array.from(entries.keys()).some(k => k.startsWith('assets/'));
         const invalid = !mcmeta && !hasAssets;
 
@@ -628,11 +729,12 @@ body {
           hasMeta,
           format, minFormat, maxFormat,
           iconUrl,
+          previewThumbs,
           invalid,
           zipSize: file.size
         });
       } catch (err) {
-        setError('Could not read "' + file.name + '" — is it a valid .zip? (' + err.message + ')');
+        setError('Could not read "' + file.name + '" — ' + err.message + '.');
       }
     }
     applyStoredOrder();
@@ -659,11 +761,43 @@ body {
     return null;
   }
 
+  // Live conflict preview: for the CURRENT priority order, figure out which
+  // packs share a file path with another pack. "wins" = this pack's copy is
+  // the one that survives; "loses" = a higher-priority pack overrides it.
+  // Lang files are excluded since those get merged key-by-key, not overridden.
+  function computeConflicts(list) {
+    const pathMap = new Map();
+    list.forEach((pack, i) => {
+      if (pack.invalid) return;
+      for (const path of pack.entries.keys()) {
+        if (LANG_RE.test(path)) continue;
+        if (!pathMap.has(path)) pathMap.set(path, []);
+        pathMap.get(path).push(i);
+      }
+    });
+    const perPack = list.map(() => ({ wins: 0, loses: 0 }));
+    let totalConflicts = 0;
+    for (const arr of pathMap.values()) {
+      if (arr.length < 2) continue;
+      perPack[arr[0]].wins++;
+      for (let k = 1; k < arr.length; k++) {
+        perPack[arr[k]].loses++;
+        totalConflicts++;
+      }
+    }
+    return { perPack, totalConflicts };
+  }
+
   function render() {
+    const prevScrollTop = list.scrollTop;
     list.innerHTML = '';
     empty.style.display = packs.length ? 'none' : 'block';
     legendWrap.style.display = packs.length > 1 ? 'block' : 'none';
-    packCount.textContent = packs.length + (packs.length === 1 ? ' pack' : ' packs');
+    listControls.style.display = packs.length > 1 ? 'flex' : 'none';
+
+    const { perPack, totalConflicts } = computeConflicts(packs);
+    packCount.textContent = packs.length + (packs.length === 1 ? ' pack' : ' packs') +
+      (totalConflicts ? ' \u00b7 ' + totalConflicts + (totalConflicts === 1 ? ' conflict' : ' conflicts') : '');
 
     const nameKeyCounts = new Map();
     packs.forEach(p => {
@@ -700,7 +834,12 @@ body {
       footerStat.innerHTML = 'Ready! <strong>' + packs.length + ' packs</strong> &middot; ' + formatBytes(totalBytes) + ' total';
     }
 
+    const filterQ = filterText.trim().toLowerCase();
+    let renderedCount = 0;
+
     packs.forEach((pack, i) => {
+      if (filterQ && !pack.name.toLowerCase().includes(filterQ) && !pack.fileName.toLowerCase().includes(filterQ)) return;
+      renderedCount++;
       const li = document.createElement('li');
       li.className = 'rpc-slot' + (pack.invalid ? ' rpc-invalid' : '');
       li.draggable = true;
@@ -710,11 +849,13 @@ body {
 
       const iconHtml = pack.iconUrl
         ? '<img src="' + pack.iconUrl + '" alt="" />'
-        : '<span>&#9636;</span>';
+        : (pack.previewThumbs && pack.previewThumbs.length
+            ? '<div class="rpc-icon-mosaic">' + pack.previewThumbs.map(t => '<img src="' + t + '" alt="" />').join('') + '</div>'
+            : '<span>&#9636;</span>');
 
       let warnHtml = '';
       if (pack.invalid) {
-        warnHtml = '<p class="rpc-warn-error">not a resource pack — no pack.mcmeta or assets/</p>';
+        warnHtml = '<p class="rpc-warn-error">' + (pack.fileCount === 0 ? 'empty zip file' : 'not a resource pack — no pack.mcmeta or assets/') + '</p>';
       } else if (!pack.hasMeta) {
         warnHtml = '<p class="rpc-warn">no pack.mcmeta found</p>';
       } else {
@@ -725,6 +866,13 @@ body {
       const nk = normalizeKey(pack.name);
       if (nk && nameKeyCounts.get(nk) > 1) {
         warnHtml += '<p class="rpc-warn">possible duplicate of another pack in this list</p>';
+      }
+      const stats = perPack[i];
+      if (stats.loses > 0) {
+        warnHtml += '<p class="rpc-conflict-note">' + stats.loses + ' file' + (stats.loses === 1 ? '' : 's') + ' overridden by higher-priority packs</p>';
+      }
+      if (stats.wins > 0) {
+        warnHtml += '<p class="rpc-conflict-note rpc-win">' + stats.wins + ' file' + (stats.wins === 1 ? '' : 's') + ' override lower-priority packs</p>';
       }
 
       const versionLabel = guessVersionLabel(pack);
@@ -776,10 +924,13 @@ body {
       list.appendChild(li);
     });
 
+    noMatch.style.display = (packs.length > 0 && renderedCount === 0) ? 'block' : 'none';
+
     resultBox.style.display = 'none';
     updateIconPreview();
     if (!nameInput.value && packs.length) nameInput.placeholder = packs[0].name;
     saveOrder();
+    list.scrollTop = prevScrollTop;
     if (focusIndex !== null) {
       const el = list.children[focusIndex];
       if (el) el.focus();
@@ -1013,7 +1164,6 @@ body {
     progressLabel.textContent = 'Combining files...';
 
     try {
-      const LANG_RE = /^assets\/[^/]+\/lang\/[^/]+\.json$/i;
       const merged = new Map();
       const langSources = new Map();
       const overrideGroups = new Map();
@@ -1072,11 +1222,16 @@ body {
 
       const outZip = new JSZip();
       const pathList = Array.from(merged.keys());
+      const failedPaths = [];
       let done = 0;
       for (const path of pathList) {
         const entry = merged.get(path);
-        const content = await entry.async('uint8array');
-        outZip.file(path, content);
+        try {
+          const content = await entry.async('uint8array');
+          outZip.file(path, content);
+        } catch (e) {
+          failedPaths.push(path);
+        }
         done++;
         if (done % 25 === 0 || done === pathList.length) {
           progressFill.style.width = (40 + done / pathList.length * 40) + '%';
@@ -1107,6 +1262,13 @@ body {
         overwritten.toLocaleString() + ' overridden by a higher-priority pack' +
         (langMergedCount ? ' &middot; ' + langMergedCount + ' language files merged key-by-key' : '') + '<br/>' +
         'final size: ' + sizeKb + ' KB';
+
+      if (failedPaths.length) {
+        resultStats.innerHTML +=
+          '<br/><span style="color: var(--redstone);">⚠ ' + failedPaths.length + ' file' + (failedPaths.length === 1 ? '' : 's') +
+          ' could not be read and ' + (failedPaths.length === 1 ? 'was' : 'were') + ' skipped (the source zip may be partially corrupted): ' +
+          escapeHtml(failedPaths.slice(0, 10).join(', ')) + (failedPaths.length > 10 ? ', +' + (failedPaths.length - 10) + ' more' : '') + '</span>';
+      }
 
       if (overrideGroups.size) {
         const rows = Array.from(overrideGroups.entries()).sort((a, b) => b[1] - a[1]);
